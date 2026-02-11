@@ -60,9 +60,17 @@ export default async function main(req: Request) {
         return response;
     }
 
-    if (config.bringYourOwnDomain) {
-        return bringYourOwnDomainDoesNotSupportSubdomainsYet(parsedUrl?.subdomain!);
-    }
-
-    return new Response(`Resource at ${url} not found!`, { status: 404 });
+    // Fallback: serve the landing page when domain parsing can't determine the route
+    // (e.g., behind a reverse proxy like Koyeb where req.url has an internal hostname)
+    console.log("Fallback: serving the landing page from walrus...");
+    const fallbackUrlFetcher = config.enableAllowlist ? premiumUrlFetcher : standardUrlFetcher;
+    const fallbackResponse = await fallbackUrlFetcher.resolveDomainAndFetchUrl(
+        {
+            subdomain: config.landingPageOidB36,
+            path: parsedUrl?.path ?? "/index.html",
+        },
+        Base36toHex(config.landingPageOidB36),
+        blocklistChecker,
+    );
+    return fallbackResponse;
 }
