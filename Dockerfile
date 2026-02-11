@@ -13,6 +13,7 @@ RUN apt-get update -y && apt-get install -y ca-certificates
 ENV ENABLE_ALLOWLIST=false
 ENV ENABLE_BLOCKLIST=false
 ENV LANDING_PAGE_OID_B36=299vukmibirvize269z8ypoxk0uh4ls6gyjdt3yinkrlebumbj
+ENV PORTAL_DOMAIN_NAME_LENGTH=51
 ENV PREMIUM_RPC_URL_LIST=https://fullnode.testnet.sui.io:443
 ENV RPC_URL_LIST=https://fullnode.testnet.sui.io:443
 ENV SUINS_CLIENT_NETWORK=testnet
