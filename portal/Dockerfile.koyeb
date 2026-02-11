@@ -1,0 +1,41 @@
+# Dockerfile for deploying the Walrus Sites portal to Koyeb (free tier)
+# Uses the LANDING_PAGE_OID_B36 approach to serve a single site
+# without needing wildcard subdomain support.
+
+FROM oven/bun:1.2.5 AS base
+WORKDIR /usr/src/app
+
+# --- Build stage ---
+FROM base AS install
+
+RUN apt-get update -y && apt-get install -y ca-certificates
+
+# Environment variables — testnet config for Awesome Sui Skills
+ENV ENABLE_ALLOWLIST=false
+ENV ENABLE_BLOCKLIST=false
+ENV LANDING_PAGE_OID_B36=299vukmibirvize269z8ypoxk0uh4ls6gyjdt3yinkrlebumbj
+ENV PREMIUM_RPC_URL_LIST=https://fullnode.testnet.sui.io:443
+ENV RPC_URL_LIST=https://fullnode.testnet.sui.io:443
+ENV SUINS_CLIENT_NETWORK=testnet
+ENV AGGREGATOR_URL=https://aggregator.walrus-testnet.walrus.space
+ENV SITE_PACKAGE=0xf99aee9f21493e1590e7e5a9aea6f343a1f381031a04a732724871fc294be799
+ENV B36_DOMAIN_RESOLUTION_SUPPORT=true
+
+RUN mkdir -p /temp/prod
+COPY package.json bun.lock /temp/prod/
+COPY common /temp/prod/common
+COPY server /temp/prod/server
+COPY worker /temp/prod/worker
+RUN cd /temp/prod && bun install --frozen-lockfile
+
+# --- Production stage ---
+FROM base AS release
+COPY --from=install /temp/prod/node_modules node_modules
+COPY --from=install /temp/prod/package.json .
+COPY --from=install /temp/prod/common ./common
+COPY --from=install /temp/prod/server ./server
+
+USER bun
+EXPOSE 3000/tcp
+ENV NODE_ENV=production
+CMD [ "bun", "run", "server" ]
