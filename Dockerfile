@@ -1,6 +1,5 @@
-# Dockerfile for deploying the Walrus Sites portal to Koyeb (free tier)
-# Uses the LANDING_PAGE_OID_B36 approach to serve a single site
-# without needing wildcard subdomain support.
+# Walrus Sites Portal — Koyeb free tier deployment (testnet)
+# Serves the Awesome Sui Skills site via LANDING_PAGE_OID_B36
 
 FROM oven/bun:1.2.5 AS base
 WORKDIR /usr/src/app
@@ -10,7 +9,7 @@ FROM base AS install
 
 RUN apt-get update -y && apt-get install -y ca-certificates
 
-# Environment variables — testnet config for Awesome Sui Skills
+# Testnet configuration
 ENV ENABLE_ALLOWLIST=false
 ENV ENABLE_BLOCKLIST=false
 ENV LANDING_PAGE_OID_B36=299vukmibirvize269z8ypoxk0uh4ls6gyjdt3yinkrlebumbj
@@ -22,10 +21,10 @@ ENV SITE_PACKAGE=0xf99aee9f21493e1590e7e5a9aea6f343a1f381031a04a732724871fc294be
 ENV B36_DOMAIN_RESOLUTION_SUPPORT=true
 
 RUN mkdir -p /temp/prod
-COPY package.json bun.lock /temp/prod/
-COPY common /temp/prod/common
-COPY server /temp/prod/server
-COPY worker /temp/prod/worker
+COPY portal/package.json portal/bun.lock /temp/prod/
+COPY portal/common /temp/prod/common
+COPY portal/server /temp/prod/server
+COPY portal/worker /temp/prod/worker
 RUN cd /temp/prod && bun install --frozen-lockfile
 
 # --- Production stage ---
